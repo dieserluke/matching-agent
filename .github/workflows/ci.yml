@@ -30,7 +30,8 @@ jobs:
       PGDATABASE: testdb
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -58,27 +59,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
 
       - name: Apply migrations in Base44
         working-directory: matching-agent
         env:
           BASE44_API_URL: ${{ secrets.BASE44_API_URL }}
-          BASE44_API_KEY: ${{ secrets.BASE44_API_KEY }} 
+          BASE44_API_KEY: ${{ secrets.BASE44_API_KEY }}
         run: |
           for f in base44/migrations/*.sql; do
-           echo "Applying $f to Base44"
-           curl -X POST "$BASE44_API_URL/migrations/apply" \
-             -H "Authorization: Bearer $BASE44_API_KEY" \
-             -H "Content-Type: text/sql" \
-             --data-binary @"$f"
-         done
+            echo "Applying $f to Base44"
+            curl -X POST "$BASE44_API_URL/migrations/apply" \
+              -H "Authorization: Bearer $BASE44_API_KEY" \
+              -H "Content-Type: text/sql" \
+              --data-binary @"$f"
+          done
 
       - name: Import n8n Workflows
         working-directory: matching-agent
         env:
+          N8N_URL:     ${{ secrets.N8N_URL }}
           N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
-          N8N_URL: ${{ secrets.N8N_URL }}
         run: |
           for f in n8n/*.json; do
             echo "Importing $f into n8n"
