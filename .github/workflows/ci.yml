@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run migration tests
+        run: |
+          echo "Hier später psql-Migrationstests"
+      - name: Run JS tests
+        run: npm test || echo "Keine Tests definiert"
+
+  deploy:
+    needs: test-and-lint
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Apply migrations
+        run: |
+          echo "Hier später psql migrations auf Prod-DB"
+      - name: Import n8n workflows
+        run: |
+          echo "Hier später curl import match-object.json"

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "timeless_grandeur",
+    "name": "Timeless Grandeur",
+    "no_go_criteria": [],
+    "must_have_criteria": [],
+    "location_threshold": 0.7,
+    "fallback_strategy": { "max_violation_stages": 3 },
+    "weights": { "object":0.35, "location":0.25, "prototype":0.20, "semantic":0.20 },
+    "prototype_vector": [],
+    "prototype_feature_schema": {}
+  }
+]
