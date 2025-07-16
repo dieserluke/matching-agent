@@ -36,21 +36,24 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
+      - name: Debug Structure
+        run: ls -R .
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          cd matching-agent
+          npm ci
 
       - name: Run SQL Migrations (Test-DB)
         run: |
+          cd matching-agent
           psql -c "\dt" || echo "DB empty, applying migrations"
           psql -f base44/migrations/001_create_embeddings_table.sql
 
       - name: Run Jest Tests
-        run: npm test
+        run: |
+          cd matching-agent
+          npm test
 
   deploy:
     name: Deploy to Prod
@@ -63,27 +66,25 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Apply migrations in Base44
+        run: |
+          cd matching-agent
+          for f in base44/migrations/*.sql; do
+            curl -X POST "$BASE44_API_URL/migrations/apply" \
+              -H "Authorization: Bearer $BASE44_API_KEY" \
+              --data-binary @"$f"
+          done
         env:
           BASE44_API_URL: ${{ secrets.BASE44_API_URL }}
           BASE44_API_KEY: ${{ secrets.BASE44_API_KEY }}
-        run: |
-          for f in base44/migrations/*.sql; do
-            echo "Applying $f to Base44"
-            curl -X POST "$BASE44_API_URL/migrations/apply" \
-              -H "Authorization: Bearer $BASE44_API_KEY" \
-              -H "Content-Type: text/sql" \
-              --data-binary @"$f"
-          done
 
       - name: Import n8n Workflows
+        run: |
+          cd matching-agent
+          for f in n8n/*.json; do
+            curl -X POST "$N8N_URL/rest/workflows/import" \
+              -H "Authorization: Bearer $N8N_API_KEY" \
+              --data @"$f"
+          done
         env:
           N8N_URL:     ${{ secrets.N8N_URL }}
           N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
-        run: |
-          for f in n8n/*.json; do
-            echo "Importing $f into n8n"
-            curl -X POST "$N8N_URL/rest/workflows/import" \
-              -H "Authorization: Bearer $N8N_API_KEY" \
-              -H "Content-Type: application/json" \
-              --data @"$f"
-          done
