@@ -38,14 +38,17 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
+        working-directory: matching-agent
         run: npm ci
 
       - name: Run SQL Migrations (Test-DB)
+        working-directory: matching-agent
         run: |
           psql -c "\dt" || echo "DB empty, applying migrations"
           psql -f base44/migrations/001_create_embeddings_table.sql
 
       - name: Run Jest Tests
+        working-directory: matching-agent
         run: npm test
 
   deploy:
@@ -57,18 +60,28 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Apply Migrations to Prod-DB
+      - name: Apply migrations in Base44
+        working-directory: matching-agent
         env:
-          DATABASE_URL: ${{ secrets.PROD_DB_URL }}
+          BASE44_API_URL: ${{ secrets.BASE44_API_URL }}
+          BASE44_API_KEY: ${{ secrets.BASE44_API_KEY }} 
         run: |
-          psql "$DATABASE_URL" -f base44/migrations/001_create_embeddings_table.sql
+          for f in base44/migrations/*.sql; do
+           echo "Applying $f to Base44"
+           curl -X POST "$BASE44_API_URL/migrations/apply" \
+             -H "Authorization: Bearer $BASE44_API_KEY" \
+             -H "Content-Type: text/sql" \
+             --data-binary @"$f"
+         done
 
       - name: Import n8n Workflows
+        working-directory: matching-agent
         env:
           N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
-          N8N_URL: https://dein-n8n-server.example.com
+          N8N_URL: ${{ secrets.N8N_URL }}
         run: |
           for f in n8n/*.json; do
+            echo "Importing $f into n8n"
             curl -X POST "$N8N_URL/rest/workflows/import" \
               -H "Authorization: Bearer $N8N_API_KEY" \
               -H "Content-Type: application/json" \
