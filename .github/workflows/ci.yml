@@ -11,10 +11,6 @@ jobs:
     name: Test (Jest + Migration)
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: matching-agent
-
     services:
       postgres:
         image: postgres:13
@@ -61,10 +57,6 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: matching-agent
 
     steps:
       - name: Check out code
