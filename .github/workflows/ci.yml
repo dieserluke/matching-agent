@@ -9,6 +9,10 @@ jobs:
     name: Test (Jest + Migration)
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: matching-agent
+
     services:
       postgres:
         image: postgres:13
@@ -39,17 +43,14 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        working-directory: matching-agent
         run: npm ci
 
       - name: Run SQL Migrations (Test-DB)
-        working-directory: matching-agent
         run: |
           psql -c "\dt" || echo "DB empty, applying migrations"
           psql -f base44/migrations/001_create_embeddings_table.sql
 
       - name: Run Jest Tests
-        working-directory: matching-agent
         run: npm test
 
   deploy:
@@ -58,12 +59,15 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: matching-agent
+
     steps:
       - name: Check out code
         uses: actions/checkout@v3
 
       - name: Apply migrations in Base44
-        working-directory: matching-agent
         env:
           BASE44_API_URL: ${{ secrets.BASE44_API_URL }}
           BASE44_API_KEY: ${{ secrets.BASE44_API_KEY }}
@@ -77,7 +81,6 @@ jobs:
           done
 
       - name: Import n8n Workflows
-        working-directory: matching-agent
         env:
           N8N_URL:     ${{ secrets.N8N_URL }}
           N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
