@@ -9,3 +9,4 @@ Dieses Repository enthält:
 - **base44/seeds/**: Seed-Daten für Cluster-Konfiguration
 - **tests/**: Unit- und Integrationstests
 - **.github/workflows/**: CI/CD-Definitionen
+
