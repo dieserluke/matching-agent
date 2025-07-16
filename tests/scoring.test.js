@@ -1,6 +1,6 @@
 // tests/scoring.test.js
-describe('Scoring Logic', () => {
-  test('ObjScore berechnet korrekt', () => {
-    // TODO: deine Testfälle
+describe("Smoke tests", () => {
+  test("Jest läuft", () => {
+    expect(true).toBe(true);
   });
 });
