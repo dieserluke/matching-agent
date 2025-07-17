@@ -48,9 +48,11 @@ jobs:
           npm --version
 
       - name: Install dependencies
+        working-directory: ./matching-agent
         run: npm ci
 
       - name: Run tests
+        working-directory: ./matching-agent
         run: npm test
 
       - name: Apply Base44 migrations
