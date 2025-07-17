@@ -14,6 +14,7 @@ jobs:
     services:
       postgres:
         image: postgres:13
+        ports: ["5432:5432"]
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -47,9 +48,11 @@ jobs:
           npm --version
 
       - name: Install dependencies
+        working-directory: ./matching-agent
         run: npm ci
 
       - name: Run tests
+        working-directory: ./matching-agent
         run: npm test
 
       - name: Apply Base44 migrations
