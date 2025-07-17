@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  n8n:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./data:/data   # Hier werden Deine JSON-Files abgelegt
+      - ~/.n8n:/home/node/.n8n  # Persistente n8n-Einstellungen & Credentials
+    environment:
+      - N8N_HOST=128.140.90.142
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - GENERIC_TIMEZONE=Europe/Berlin
+      - NODE_OPTIONS=--max-old-space-size=6144
+      - N8N_RUNNERS_HEARTBEAT_INTERVAL=20000 
+      - N8N_SECURE_COOKIE=false
+      - N8N_RUNNERS_ENABLED=true
+      - NODE_FUNCTION_ALLOW_EXTERNAL=rbush
+      - NODE_PATH=/usr/local/lib/node_modules
+      - WEBHOOK_URL=http://128.140.90.142:5678/
+    env_file:
+      - .env
