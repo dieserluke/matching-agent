@@ -1,0 +1,55 @@
+name: CI & Deploy
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+
+jobs:
+  test:
+    name: Test & Base44 Migration
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports: ["5432:5432"]
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd "pg_isready -U postgres -d testdb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: testdb
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Apply Base44 migrations
+        env:
+          BASE44_API_URL: ${{ secrets.BASE44_API_URL }}
+          BASE44_API_KEY: ${{ secrets.BASE44_API_KEY }}
+        run: |
+          for f in base44/migrations/*.sql; do
+            echo "Applying $f to Base44"
+            curl -X POST "$BASE44_API_URL/migrations/apply" \
+                 -H "Authorization: Bearer $BASE44_API_KEY" \
+                 -H "Content-Type: text/sql" \
+                 --data-binary @"$f"
+          done
